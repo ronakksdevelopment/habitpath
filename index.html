@@ -627,7 +627,7 @@
   .notif-body  { font-size: 0.78rem; opacity: 0.85; margin-top: 1px; }
   .notif-close { font-size: 1rem; opacity: 0.7; padding: 4px 6px; }
 
-  /* ── INSTALL PROMPT ──────────────────────────────── */
+  /* ── INSTALL PROMPT BANNER ───────────────────────── */
   .install-card {
     background: linear-gradient(135deg, var(--lavender-700) 0%, var(--lavender-500) 100%);
     border-radius: var(--radius-xl);
@@ -635,6 +635,7 @@
     display: flex; align-items: center; gap: 14px;
     position: relative; overflow: hidden;
     box-shadow: 0 6px 24px rgba(124,92,191,0.3);
+    cursor: pointer;
   }
   .install-card::after {
     content:'';
@@ -652,12 +653,13 @@
     font-size: 0.8rem; font-weight: 800; white-space: nowrap;
     transition: all var(--transition); flex-shrink:0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    position: relative; z-index: 2;
   }
   .install-btn:active { transform:scale(0.95); }
   .install-dismiss {
     position:absolute; top:8px; right:10px;
     font-size:0.75rem; color:rgba(255,255,255,0.5);
-    padding:4px 6px; cursor:pointer;
+    padding:4px 6px; cursor:pointer; z-index: 3;
   }
 
   /* ── INSTALL GUIDE MODAL ────────────────────────── */
@@ -815,6 +817,15 @@
   .toggle.on { background: var(--lavender-500); }
   .toggle::after { content:''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: left var(--transition); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
   .toggle.on::after { left: 22px; }
+
+  /* ── ALREADY INSTALLED STATE ─────────────────────── */
+  .installed-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #dcfce7; color: #16a34a;
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 0.8rem; font-weight: 700;
+    border: 1px solid #bbf7d0;
+  }
 </style>
 </head>
 <body>
@@ -868,14 +879,15 @@
 
     <!-- TODAY TAB -->
     <div class="tab-view active" id="tab-today">
-      <div id="installPrompt" style="display:none" class="install-card">
+      <!-- Install prompt banner (shown when native install is available) -->
+      <div id="installPrompt" style="display:none" class="install-card" onclick="handleInstallClick()">
         <div class="install-icon">📲</div>
         <div class="install-text">
           <div class="install-title">Install HabitPath App</div>
           <div class="install-sub">Works offline · No app store needed</div>
         </div>
-        <button class="install-btn" id="installBtn" onclick="handleInstallClick()">Install</button>
-        <span class="install-dismiss" onclick="dismissInstallBanner()" title="Dismiss">✕</span>
+        <button class="install-btn" id="installBtnToday">Install</button>
+        <span class="install-dismiss" onclick="event.stopPropagation();dismissInstallBanner()" title="Dismiss">✕</span>
       </div>
 
       <div class="quote-card" id="quoteCard">
@@ -923,26 +935,14 @@
     <div class="tab-view" id="tab-settings">
       <div class="section-header" style="margin-bottom:16px"><span class="section-title">Settings</span></div>
 
-      <!-- Install card in settings -->
-      <div id="settingsInstallCard" style="display:none" class="install-card" onclick="handleInstallClick()" style="cursor:pointer">
+      <!-- Install card in settings (always visible, adapts to state) -->
+      <div id="settingsInstallCard" class="install-card" onclick="handleInstallClick()" style="margin-bottom:20px">
         <div class="install-icon">📲</div>
         <div class="install-text">
           <div class="install-title">Install HabitPath App</div>
-          <div class="install-sub">Add to Home Screen · Works offline</div>
+          <div class="install-sub" id="settingsInstallSub">Add to Home Screen · Works offline</div>
         </div>
-        <button class="install-btn" onclick="handleInstallClick();event.stopPropagation()">Install</button>
-        <span class="install-dismiss" onclick="event.stopPropagation();dismissInstallBanner()" title="Dismiss">✕</span>
-      </div>
-
-      <div class="settings-list">
-        <div class="settings-item" onclick="handleInstallClick()">
-          <div class="settings-item-icon" style="background:#ede9fe">📲</div>
-          <div class="settings-item-info">
-            <div class="settings-item-title">Install App</div>
-            <div class="settings-item-sub">Add to Home Screen on any device</div>
-          </div>
-          <span class="settings-item-arrow">›</span>
-        </div>
+        <button class="install-btn" id="installBtnSettings">Install</button>
       </div>
 
       <div class="settings-list">
@@ -1149,7 +1149,7 @@
           </div>
         </div>
         <div class="ig-tip">💡 <strong>Tip:</strong> You may also see an automatic "Install app" banner at the bottom of Chrome — just tap it!</div>
-        <button class="ig-install-now-btn show" id="androidInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now (One Tap)</button>
+        <button class="ig-install-now-btn" id="androidInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now (One Tap)</button>
       </div>
 
       <!-- iOS PANEL -->
@@ -1226,7 +1226,7 @@
           </div>
         </div>
         <div class="ig-tip">💡 <strong>Alternative:</strong> Chrome menu (⋮) → <strong>Save and share</strong> → <strong>Install page as app</strong></div>
-        <button class="ig-install-now-btn show" id="chromeInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now</button>
+        <button class="ig-install-now-btn" id="chromeInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now</button>
       </div>
 
       <!-- EDGE PANEL -->
@@ -1262,7 +1262,7 @@
           </div>
         </div>
         <div class="ig-tip">💡 Edge also shows an install icon in the address bar — click it for the fastest install!</div>
-        <button class="ig-install-now-btn show" id="edgeInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now</button>
+        <button class="ig-install-now-btn" id="edgeInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now</button>
       </div>
 
       <!-- SAMSUNG PANEL -->
@@ -1297,7 +1297,7 @@
             </div>
           </div>
         </div>
-        <div class="ig-tip">💡 Samsung Internet also supports Web App installs — look for a "Install" banner that may appear automatically!</div>
+        <div class="ig-tip">💡 Samsung Internet also supports Web App installs — look for an "Install" banner that may appear automatically!</div>
       </div>
 
     </div><!-- /ig-body -->
@@ -1331,7 +1331,8 @@ let selectedColor = COLORS[0];
 let reminders = [];
 let activeCategory = 'all';
 let reminderTimers = [];
-let deferredInstall = null;
+let deferredInstall = null;  // Stores the beforeinstallprompt event
+let isInstalled = false;     // Tracks if app is already installed
 let audioCtx = null;
 
 // ═══════════════════════════════════════════════
@@ -1473,10 +1474,10 @@ function renderToday() {
   }
 
   // Group by time
-  const morning  = filtered.filter(h => h.time && parseInt(h.time) < 12);
+  const morning   = filtered.filter(h => h.time && parseInt(h.time) < 12);
   const afternoon = filtered.filter(h => h.time && parseInt(h.time) >= 12 && parseInt(h.time) < 17);
-  const evening  = filtered.filter(h => h.time && parseInt(h.time) >= 17);
-  const noTime   = filtered.filter(h => !h.time);
+  const evening   = filtered.filter(h => h.time && parseInt(h.time) >= 17);
+  const noTime    = filtered.filter(h => !h.time);
 
   container.innerHTML = '';
 
@@ -2042,29 +2043,190 @@ function clearAllData() {
 }
 
 // ═══════════════════════════════════════════════
-//  PWA INSTALL
+//  PWA INSTALL — FIXED & COMPLETE
 // ═══════════════════════════════════════════════
+
+/**
+ * Detects the user's platform for auto-selecting the right install tab
+ */
+function detectPlatform() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+  if (/samsung/.test(ua) || /samsungbrowser/.test(ua)) return 'samsung';
+  if (/edg\//.test(ua)) return 'edge';
+  if (/android/.test(ua)) return 'android';
+  return 'chrome'; // desktop default
+}
+
+/**
+ * Check if app is already running as installed PWA
+ */
+function checkIfInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+/**
+ * Update the install UI state across all install buttons/cards
+ */
+function updateInstallUI() {
+  const alreadyInstalled = checkIfInstalled();
+  const hasNativePrompt  = !!deferredInstall;
+
+  // ── Settings card ──
+  const settingsCard = document.getElementById('settingsInstallCard');
+  const settingsBtn  = document.getElementById('installBtnSettings');
+  const settingsSub  = document.getElementById('settingsInstallSub');
+
+  if (alreadyInstalled) {
+    settingsBtn.textContent = '✓ Installed';
+    settingsBtn.style.background = '#dcfce7';
+    settingsBtn.style.color = '#16a34a';
+    settingsSub.textContent = 'Running as installed app';
+    settingsCard.style.cursor = 'default';
+    settingsCard.onclick = null;
+  } else if (hasNativePrompt) {
+    settingsBtn.textContent = 'Install';
+    settingsSub.textContent = 'One tap to install · Works offline';
+  } else {
+    settingsBtn.textContent = 'How to install';
+    settingsSub.textContent = 'Step-by-step guide for your device';
+  }
+
+  // ── Today banner ──
+  const todayBanner = document.getElementById('installPrompt');
+  if (!alreadyInstalled && hasNativePrompt) {
+    todayBanner.style.display = 'flex';
+  }
+
+  // ── "Install Now" buttons inside guide modal ──
+  // Show them only if a native prompt is available
+  ['androidInstallBtn','chromeInstallBtn','edgeInstallBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('show', hasNativePrompt);
+  });
+}
+
+/**
+ * Main entry point for ALL install buttons throughout the app
+ */
+async function handleInstallClick() {
+  if (checkIfInstalled()) {
+    showToast('✅', 'Already installed!', '#6fcb9f');
+    return;
+  }
+
+  if (deferredInstall) {
+    // Native browser prompt available — trigger it directly
+    await triggerNativeInstall();
+  } else {
+    // No native prompt — show the step-by-step guide
+    openInstallGuide();
+  }
+}
+
+/**
+ * Triggers the native browser install prompt (Android/Chrome/Edge/Desktop)
+ */
+async function triggerNativeInstall() {
+  if (!deferredInstall) {
+    // Prompt already used or not available — open guide instead
+    openInstallGuide();
+    return;
+  }
+  try {
+    await deferredInstall.prompt();
+    const { outcome } = await deferredInstall.userChoice;
+    deferredInstall = null; // Can only be used once
+    if (outcome === 'accepted') {
+      document.getElementById('installPrompt').style.display = 'none';
+      closeInstallGuide();
+      showToast('📱', 'Installing HabitPath…', '#b39ddb');
+    } else {
+      showToast('💡', 'Install anytime from Settings', '#b39ddb');
+    }
+    updateInstallUI();
+  } catch(err) {
+    console.warn('Install prompt error:', err);
+    openInstallGuide();
+  }
+}
+
+/**
+ * Opens the install guide modal, auto-selecting the user's platform tab
+ */
+function openInstallGuide() {
+  document.getElementById('installGuideModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Auto-select the correct platform tab
+  const platform = detectPlatform();
+  const tabBtn = document.querySelector(`.device-tab[onclick*="'${platform}'"]`);
+  if (tabBtn) {
+    document.querySelectorAll('.device-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.device-panel').forEach(p => p.classList.remove('active'));
+    tabBtn.classList.add('active');
+    const panel = document.getElementById('panel-' + platform);
+    if (panel) panel.classList.add('active');
+  }
+}
+
+/**
+ * Closes the install guide modal
+ */
+function closeInstallGuide() {
+  document.getElementById('installGuideModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/**
+ * Background click closes the guide modal
+ */
+function installGuideModalBgClick(e) {
+  if (e.target === document.getElementById('installGuideModal')) closeInstallGuide();
+}
+
+/**
+ * Switches device tab inside the guide modal
+ */
+function switchDevice(name, btn) {
+  document.querySelectorAll('.device-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.device-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+}
+
+/**
+ * Dismiss the today-tab install banner (without uninstalling)
+ */
+function dismissInstallBanner() {
+  document.getElementById('installPrompt').style.display = 'none';
+}
+
+/**
+ * Set up all install-related event listeners
+ */
 function setupInstallPrompt() {
+  // Capture the install prompt before browser consumes it
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredInstall = e;
-    document.getElementById('installPrompt').style.display = 'flex';
+    updateInstallUI();
+    console.log('✅ Install prompt captured');
   });
 
-  document.getElementById('installBtn').onclick = async () => {
-    if (!deferredInstall) return;
-    deferredInstall.prompt();
-    const { outcome } = await deferredInstall.userChoice;
-    if (outcome === 'accepted') {
-      document.getElementById('installPrompt').style.display = 'none';
-      showToast('📱', 'App installed!', '#b39ddb');
-    }
-    deferredInstall = null;
-  };
-
+  // App successfully installed
   window.addEventListener('appinstalled', () => {
+    deferredInstall = null;
     document.getElementById('installPrompt').style.display = 'none';
+    updateInstallUI();
+    showToast('🎉', 'HabitPath installed!', '#6fcb9f');
+    console.log('✅ App installed');
   });
+
+  // Run initial UI state check
+  updateInstallUI();
 }
 
 // ═══════════════════════════════════════════════
@@ -2076,24 +2238,45 @@ setInterval(() => {
 }, 60000);
 
 // ═══════════════════════════════════════════════
-//  SERVICE WORKER (inline)
+//  SERVICE WORKER (inline blob — enables PWA offline + install)
 // ═══════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
   const swCode = `
     const CACHE = 'habitpath-v1';
-    self.addEventListener('install', e => { self.skipWaiting(); });
-    self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))); });
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim())
+      );
+    });
     self.addEventListener('fetch', e => {
-      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }).catch(() => r)));
+      // Only cache same-origin requests
+      if (!e.request.url.startsWith(self.location.origin)) return;
+      e.respondWith(
+        caches.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(res => {
+            if (res && res.status === 200) {
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          }).catch(() => cached);
+        })
+      );
     });
   `;
-  const blob = new Blob([swCode], {type:'text/javascript'});
+  const blob = new Blob([swCode], { type: 'text/javascript' });
   const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    console.log('✅ Service worker registered', reg.scope);
+  }).catch(err => {
+    console.warn('SW registration failed:', err);
+  });
 }
 </script>
 </body>
