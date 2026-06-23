@@ -629,23 +629,128 @@
 
   /* ── INSTALL PROMPT ──────────────────────────────── */
   .install-card {
-    background: linear-gradient(135deg, var(--lavender-100) 0%, var(--lavender-50) 100%);
-    border: 1.5px solid var(--lavender-200);
+    background: linear-gradient(135deg, var(--lavender-700) 0%, var(--lavender-500) 100%);
     border-radius: var(--radius-xl);
-    padding: 18px; margin-bottom: 20px;
+    padding: 18px 18px 18px 16px; margin-bottom: 20px;
     display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 6px 24px rgba(124,92,191,0.3);
   }
-  .install-icon { font-size: 2rem; }
+  .install-card::after {
+    content:'';
+    position:absolute; top:-30px; right:-30px;
+    width:110px; height:110px; border-radius:50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .install-icon { font-size: 2.2rem; flex-shrink:0; }
   .install-text { flex: 1; }
-  .install-title { font-size: 0.9rem; font-weight: 800; color: var(--lavender-700); }
-  .install-sub   { font-size: 0.75rem; color: var(--gray-400); margin-top: 2px; }
+  .install-title { font-size: 0.92rem; font-weight: 800; color: white; }
+  .install-sub   { font-size: 0.72rem; color: rgba(255,255,255,0.75); margin-top: 2px; line-height:1.4; }
   .install-btn {
-    padding: 8px 16px; border-radius: var(--radius-md);
-    background: var(--lavender-600); color: white;
-    font-size: 0.8rem; font-weight: 700; white-space: nowrap;
-    transition: background var(--transition);
+    padding: 9px 16px; border-radius: var(--radius-md);
+    background: white; color: var(--lavender-700);
+    font-size: 0.8rem; font-weight: 800; white-space: nowrap;
+    transition: all var(--transition); flex-shrink:0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
-  .install-btn:active { background: var(--lavender-700); }
+  .install-btn:active { transform:scale(0.95); }
+  .install-dismiss {
+    position:absolute; top:8px; right:10px;
+    font-size:0.75rem; color:rgba(255,255,255,0.5);
+    padding:4px 6px; cursor:pointer;
+  }
+
+  /* ── INSTALL GUIDE MODAL ────────────────────────── */
+  .install-modal-overlay {
+    position:fixed; inset:0; z-index:500;
+    background:rgba(45,45,68,0.55);
+    backdrop-filter:blur(6px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity var(--transition);
+  }
+  .install-modal-overlay.open { opacity:1; pointer-events:all; }
+  .install-guide-sheet {
+    background:var(--white);
+    border-radius:28px 28px 0 0;
+    width:100%; max-width:430px;
+    padding:0 0 env(safe-area-inset-bottom,24px);
+    transform:translateY(100%);
+    transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    overflow-y:auto; max-height:92vh;
+  }
+  .install-modal-overlay.open .install-guide-sheet { transform:translateY(0); }
+  .ig-handle { width:40px;height:4px;background:var(--lavender-200);border-radius:3px;margin:14px auto 0; }
+  .ig-header { padding:18px 24px 0; display:flex; align-items:center; justify-content:space-between; }
+  .ig-title  { font-size:1.1rem; font-weight:800; color:var(--gray-800); }
+  .ig-close  { width:32px;height:32px;border-radius:50%;background:var(--lavender-100);display:flex;align-items:center;justify-content:center;color:var(--lavender-600); }
+  .ig-body   { padding:18px 24px 20px; }
+
+  /* device tabs */
+  .device-tabs { display:flex; gap:6px; margin-bottom:20px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; }
+  .device-tab {
+    padding:8px 14px; border-radius:20px; white-space:nowrap;
+    font-size:0.78rem; font-weight:700; cursor:pointer;
+    border:1.5px solid var(--lavender-200); color:var(--gray-600);
+    background:var(--white); transition:all var(--transition);
+    display:flex; align-items:center; gap:5px;
+  }
+  .device-tab.active { background:var(--lavender-600); color:white; border-color:var(--lavender-600); }
+
+  .device-panel { display:none; }
+  .device-panel.active { display:block; animation:fadeUp 0.3s ease both; }
+
+  .ig-device-hero {
+    background:linear-gradient(135deg,var(--lavender-100),var(--lavender-50));
+    border:1.5px solid var(--lavender-200);
+    border-radius:var(--radius-xl);
+    padding:20px; text-align:center; margin-bottom:18px;
+  }
+  .ig-device-emoji { font-size:2.6rem; margin-bottom:8px; }
+  .ig-device-name  { font-size:1rem; font-weight:800; color:var(--lavender-700); }
+  .ig-device-sub   { font-size:0.78rem; color:var(--gray-400); margin-top:3px; }
+
+  /* Steps */
+  .ig-steps { display:flex; flex-direction:column; gap:12px; }
+  .ig-step  { display:flex; gap:12px; align-items:flex-start; }
+  .ig-step-num {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--lavender-600); color:white;
+    font-size:0.78rem; font-weight:800;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    margin-top:1px;
+  }
+  .ig-step-content {}
+  .ig-step-title { font-size:0.9rem; font-weight:700; color:var(--gray-800); }
+  .ig-step-desc  { font-size:0.78rem; color:var(--gray-400); margin-top:2px; line-height:1.5; }
+  .ig-step-chip  {
+    display:inline-flex; align-items:center; gap:4px;
+    background:var(--lavender-100); border:1px solid var(--lavender-200);
+    border-radius:6px; padding:3px 8px;
+    font-size:0.75rem; font-weight:700; color:var(--lavender-700);
+    margin-top:5px;
+  }
+
+  .ig-tip {
+    margin-top:18px; padding:12px 14px;
+    background:linear-gradient(135deg,#fff9e6,#fffdf0);
+    border:1px solid var(--accent-amber);
+    border-radius:var(--radius-md);
+    font-size:0.78rem; color:var(--gray-600); line-height:1.5;
+  }
+  .ig-tip strong { color:#c8860a; }
+
+  .ig-install-now-btn {
+    width:100%; margin-top:18px; padding:14px;
+    border-radius:var(--radius-lg);
+    background:linear-gradient(135deg,var(--lavender-600),var(--lavender-500));
+    color:white; font-size:0.95rem; font-weight:800;
+    box-shadow:0 4px 16px rgba(124,92,191,0.35);
+    transition:transform var(--transition);
+    display:none;
+  }
+  .ig-install-now-btn.show { display:block; }
+  .ig-install-now-btn:active { transform:scale(0.97); }
 
   /* ── CONTEXT MENU ────────────────────────────────── */
   .context-menu {
@@ -764,12 +869,13 @@
     <!-- TODAY TAB -->
     <div class="tab-view active" id="tab-today">
       <div id="installPrompt" style="display:none" class="install-card">
-        <div class="install-icon">📱</div>
+        <div class="install-icon">📲</div>
         <div class="install-text">
-          <div class="install-title">Install HabitPath</div>
-          <div class="install-sub">Add to Home Screen for offline access</div>
+          <div class="install-title">Install HabitPath App</div>
+          <div class="install-sub">Works offline · No app store needed</div>
         </div>
-        <button class="install-btn" id="installBtn">Install</button>
+        <button class="install-btn" id="installBtn" onclick="handleInstallClick()">Install</button>
+        <span class="install-dismiss" onclick="dismissInstallBanner()" title="Dismiss">✕</span>
       </div>
 
       <div class="quote-card" id="quoteCard">
@@ -816,6 +922,28 @@
     <!-- SETTINGS TAB -->
     <div class="tab-view" id="tab-settings">
       <div class="section-header" style="margin-bottom:16px"><span class="section-title">Settings</span></div>
+
+      <!-- Install card in settings -->
+      <div id="settingsInstallCard" style="display:none" class="install-card" onclick="handleInstallClick()" style="cursor:pointer">
+        <div class="install-icon">📲</div>
+        <div class="install-text">
+          <div class="install-title">Install HabitPath App</div>
+          <div class="install-sub">Add to Home Screen · Works offline</div>
+        </div>
+        <button class="install-btn" onclick="handleInstallClick();event.stopPropagation()">Install</button>
+        <span class="install-dismiss" onclick="event.stopPropagation();dismissInstallBanner()" title="Dismiss">✕</span>
+      </div>
+
+      <div class="settings-list">
+        <div class="settings-item" onclick="handleInstallClick()">
+          <div class="settings-item-icon" style="background:#ede9fe">📲</div>
+          <div class="settings-item-info">
+            <div class="settings-item-title">Install App</div>
+            <div class="settings-item-sub">Add to Home Screen on any device</div>
+          </div>
+          <span class="settings-item-arrow">›</span>
+        </div>
+      </div>
 
       <div class="settings-list">
         <div class="settings-item" onclick="exportData()">
@@ -961,6 +1089,220 @@
 <!-- ───────── CONTEXT MENU ───────── -->
 <div id="ctxMenu" style="display:none" class="context-menu"></div>
 <div id="ctxOverlay" style="display:none;position:fixed;inset:0;z-index:149" onclick="closeCtx()"></div>
+
+<!-- ───────── INSTALL GUIDE MODAL ───────── -->
+<div class="install-modal-overlay" id="installGuideModal" onclick="installGuideModalBgClick(event)">
+  <div class="install-guide-sheet">
+    <div class="ig-handle"></div>
+    <div class="ig-header">
+      <div class="ig-title">📲 Install HabitPath</div>
+      <button class="ig-close" onclick="closeInstallGuide()">✕</button>
+    </div>
+    <div class="ig-body">
+
+      <!-- Device Tabs -->
+      <div class="device-tabs">
+        <button class="device-tab active" onclick="switchDevice('android',this)">🤖 Android</button>
+        <button class="device-tab" onclick="switchDevice('ios',this)">🍎 iPhone / iPad</button>
+        <button class="device-tab" onclick="switchDevice('chrome',this)">🖥️ Desktop</button>
+        <button class="device-tab" onclick="switchDevice('edge',this)">🌐 Edge</button>
+        <button class="device-tab" onclick="switchDevice('samsung',this)">📱 Samsung</button>
+      </div>
+
+      <!-- ANDROID PANEL -->
+      <div class="device-panel active" id="panel-android">
+        <div class="ig-device-hero">
+          <div class="ig-device-emoji">🤖</div>
+          <div class="ig-device-name">Android · Chrome Browser</div>
+          <div class="ig-device-sub">Works on Chrome, Brave, Edge for Android</div>
+        </div>
+        <div class="ig-steps">
+          <div class="ig-step">
+            <div class="ig-step-num">1</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Open in Chrome</div>
+              <div class="ig-step-desc">Make sure you're using Google Chrome browser on your Android device.</div>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">2</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap the Menu (⋮)</div>
+              <div class="ig-step-desc">Tap the three-dot menu in the top-right corner of Chrome.</div>
+              <span class="ig-step-chip">⋮ Menu → …</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">3</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap "Add to Home screen"</div>
+              <div class="ig-step-desc">Select "Add to Home screen" from the dropdown menu. A dialog will appear.</div>
+              <span class="ig-step-chip">📲 Add to Home screen</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">4</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap "Add"</div>
+              <div class="ig-step-desc">Confirm by tapping <strong>Add</strong>. HabitPath icon appears on your home screen!</div>
+            </div>
+          </div>
+        </div>
+        <div class="ig-tip">💡 <strong>Tip:</strong> You may also see an automatic "Install app" banner at the bottom of Chrome — just tap it!</div>
+        <button class="ig-install-now-btn show" id="androidInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now (One Tap)</button>
+      </div>
+
+      <!-- iOS PANEL -->
+      <div class="device-panel" id="panel-ios">
+        <div class="ig-device-hero">
+          <div class="ig-device-emoji">🍎</div>
+          <div class="ig-device-name">iPhone / iPad · Safari</div>
+          <div class="ig-device-sub">Must use Safari — other browsers don't support install on iOS</div>
+        </div>
+        <div class="ig-steps">
+          <div class="ig-step">
+            <div class="ig-step-num">1</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Open in Safari</div>
+              <div class="ig-step-desc">Copy this page's URL and open it in Safari browser (not Chrome or Firefox).</div>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">2</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap the Share Button</div>
+              <div class="ig-step-desc">At the bottom of Safari, tap the Share icon (box with an arrow pointing up).</div>
+              <span class="ig-step-chip">⬆️ Share button</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">3</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Scroll & Tap "Add to Home Screen"</div>
+              <div class="ig-step-desc">In the share sheet, scroll down to find and tap <strong>"Add to Home Screen"</strong>.</div>
+              <span class="ig-step-chip">＋ Add to Home Screen</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">4</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap "Add"</div>
+              <div class="ig-step-desc">Confirm with <strong>Add</strong> in the top-right. HabitPath launches like a native app!</div>
+            </div>
+          </div>
+        </div>
+        <div class="ig-tip">💡 <strong>Note:</strong> On iOS 16.4+, you get full offline support. On older iOS, it still works great as a home screen shortcut!</div>
+      </div>
+
+      <!-- CHROME DESKTOP PANEL -->
+      <div class="device-panel" id="panel-chrome">
+        <div class="ig-device-hero">
+          <div class="ig-device-emoji">🖥️</div>
+          <div class="ig-device-name">Windows / Mac / Linux · Chrome</div>
+          <div class="ig-device-sub">Google Chrome or Brave on desktop</div>
+        </div>
+        <div class="ig-steps">
+          <div class="ig-step">
+            <div class="ig-step-num">1</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Look for the Install Icon</div>
+              <div class="ig-step-desc">In Chrome's address bar (URL bar), look for a computer/install icon (⊕) on the right side.</div>
+              <span class="ig-step-chip">⊕ Install icon in address bar</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">2</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Click "Install HabitPath"</div>
+              <div class="ig-step-desc">Click the icon and then click <strong>"Install"</strong> in the popup.</div>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">3</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">App opens in its own window</div>
+              <div class="ig-step-desc">HabitPath opens as a standalone app without browser chrome. A shortcut is added to your desktop/taskbar.</div>
+            </div>
+          </div>
+        </div>
+        <div class="ig-tip">💡 <strong>Alternative:</strong> Chrome menu (⋮) → <strong>Save and share</strong> → <strong>Install page as app</strong></div>
+        <button class="ig-install-now-btn show" id="chromeInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now</button>
+      </div>
+
+      <!-- EDGE PANEL -->
+      <div class="device-panel" id="panel-edge">
+        <div class="ig-device-hero">
+          <div class="ig-device-emoji">🌐</div>
+          <div class="ig-device-name">Microsoft Edge · Desktop or Mobile</div>
+          <div class="ig-device-sub">Windows 10/11, macOS, Android, iOS</div>
+        </div>
+        <div class="ig-steps">
+          <div class="ig-step">
+            <div class="ig-step-num">1</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Click the Edge Menu (…)</div>
+              <div class="ig-step-desc">Click the three-dot menu (…) in the top-right corner of Microsoft Edge.</div>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">2</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Select "Apps"</div>
+              <div class="ig-step-desc">Hover over <strong>Apps</strong> in the dropdown menu.</div>
+              <span class="ig-step-chip">… → Apps</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">3</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Click "Install this site as an app"</div>
+              <div class="ig-step-desc">Click <strong>Install this site as an app</strong> and confirm with <strong>Install</strong>.</div>
+              <span class="ig-step-chip">📲 Install this site as an app</span>
+            </div>
+          </div>
+        </div>
+        <div class="ig-tip">💡 Edge also shows an install icon in the address bar — click it for the fastest install!</div>
+        <button class="ig-install-now-btn show" id="edgeInstallBtn" onclick="triggerNativeInstall()">⚡ Install Now</button>
+      </div>
+
+      <!-- SAMSUNG PANEL -->
+      <div class="device-panel" id="panel-samsung">
+        <div class="ig-device-hero">
+          <div class="ig-device-emoji">📱</div>
+          <div class="ig-device-name">Samsung Internet Browser</div>
+          <div class="ig-device-sub">Galaxy phones & tablets</div>
+        </div>
+        <div class="ig-steps">
+          <div class="ig-step">
+            <div class="ig-step-num">1</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Open Samsung Internet</div>
+              <div class="ig-step-desc">Open this page in the Samsung Internet browser app on your Galaxy device.</div>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">2</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap the Menu (☰)</div>
+              <div class="ig-step-desc">Tap the three-line menu icon at the bottom-right of the browser.</div>
+              <span class="ig-step-chip">☰ Menu</span>
+            </div>
+          </div>
+          <div class="ig-step">
+            <div class="ig-step-num">3</div>
+            <div class="ig-step-content">
+              <div class="ig-step-title">Tap "Add page to" → "Home screen"</div>
+              <div class="ig-step-desc">Select <strong>Add page to</strong>, then choose <strong>Home screen</strong> and tap <strong>Add</strong>.</div>
+              <span class="ig-step-chip">+ Add page to → Home screen</span>
+            </div>
+          </div>
+        </div>
+        <div class="ig-tip">💡 Samsung Internet also supports Web App installs — look for a "Install" banner that may appear automatically!</div>
+      </div>
+
+    </div><!-- /ig-body -->
+  </div><!-- /guide-sheet -->
+</div><!-- /install-guide-modal -->
 
 <script>
 // ═══════════════════════════════════════════════
